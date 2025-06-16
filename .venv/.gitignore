@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Pycharm project settings
+.idea/
+
+# macOS nonsense
+.DS_Store
+
+# Logs
+*.log
+anesthesia_log.csv
+test_anesthesia_log.csv
