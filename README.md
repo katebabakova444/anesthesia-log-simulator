@@ -100,4 +100,4 @@ GitHub (https://github.com/katebabakova444)
 ## 📌 Notes
 
 This app was created as a way to combine my medical background with new technical skills in backend development.
-All logic is handled using Python classes and functions. Data is stored in human-readable format in a .txt file for easy access and auditing.
+All logic is handled using Python classes and functions. Data is stored in human-readable format in a .csv file for easy access and auditing.
