@@ -1,10 +1,10 @@
-# 💉 Anesthesia Log Simulator
+#  Anesthesia Log Simulator
 
 A Python console application that calculates recommended anesthesia dosages based on patient data. Built with a focus on input validation, modular logic, and file handling. This project reflects my transition from a clinical anesthesiologist to a backend-focused software developer.
 
 ---
 
-## ⚙️ Features
+##  Features
 - Collects patient data via CLI (name, age, weight)
 - User chooses anesthesia type: Combined IV + Inhalational or Regional (Spinal/Epidural)
 - Calculates drug dosages based on type and weight
@@ -16,12 +16,12 @@ A Python console application that calculates recommended anesthesia dosages base
 
 ---
 
-## 🧭 Planned Enhancements
+## Planned Enhancements
 - Integrate ASA physical status classification to adjust recommended drug dosages based on patient comorbidity level.
 - Implement logic to dynamically modify protocols according to ASA class (e.g. ASA III–IV → reduce induction agents).
 - Add optional CLI prompts for ASA input and condition-based warnings in the output.
 
-## 🧰 Technologies Used
+##  Technologies Used
 
 - Python 3.12+
 - Standard Library only (`datetime`, `unittest`, etc.)
@@ -29,7 +29,7 @@ A Python console application that calculates recommended anesthesia dosages base
 
 ---
 
-## 📁 File Structure
+##  File Structure
 📁 anesthesia_log_simulator/
 ├── main.py              # CLI interface and main app logic
 ├── patient.py           # Patient data class
@@ -41,7 +41,7 @@ A Python console application that calculates recommended anesthesia dosages base
 
 ---
 
-## ▶️ How to Run
+##  How to Run
 
 1. Make sure you have Python 3 installed.
 2. Clone the repository:
@@ -82,14 +82,14 @@ Logged to anesthesia_log.csv
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 To run unit tests:
 python -m unittest test_utils.py
 
 ---
 
-## 👤 Author
+##  Author
 
 Kateryna Babakova
 Self-taught Python Developer | Background in Anesthesiology
@@ -97,7 +97,7 @@ GitHub (https://github.com/katebabakova444)
 
 ---
 
-## 📌 Notes
+##  Notes
 
 This app was created as a way to combine my medical background with new technical skills in backend development.
 All logic is handled using Python classes and functions. Data is stored in human-readable format in a .csv file for easy access and auditing.
