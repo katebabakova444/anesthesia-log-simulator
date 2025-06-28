@@ -4,7 +4,7 @@ import datetime
 
 
 filename = "anesthesia_log.csv"
-FIELDNAMES = ["timestamp", "name", "age", "weight", "anesthesia_type", "drug", "dosage", "maintenance", "technique"]
+FIELDNAMES = ["timestamp", "name", "age", "weight", "asa_class", "anesthesia_type", "propofol", "fentanyl", "sevoflurane", "drug", "dosage", "technique"]
 
 def save_log(filename="anesthesia_log.csv", **kwargs):
     is_new = not os.path.exists(filename)
