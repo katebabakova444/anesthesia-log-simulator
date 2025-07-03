@@ -1,6 +1,6 @@
 from patient import Patient
 from storage import save_log
-from utils import validate_age, validate_weight
+from utils import validate_age, validate_weight, get_asa_multiplier
 from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
 
 def choose_anesthesia_type(patient_data):
@@ -29,6 +29,11 @@ def main():
     weight = float(input("Enter patient weight (kg): "))
     while not validate_weight(weight):
         weight = float(input("Invalid weight. Enter again: "))
+    asa_class = input("Enter ASA class (I-V) [default: I]: ").strip().upper()
+    if asa_class not in ["I", "II", "III", "IV", "V"]:
+        print("Invalid input or none provided. Defaulting to ASA class I.")
+        asa_class = "I"
+
     patient_data = {"name": name, "age": age, "weight": weight}
 
     anesthesia = choose_anesthesia_type(patient_data)

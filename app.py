@@ -44,9 +44,6 @@ def generate_anesthesia():
                raise ValueError
         except(TypeError, ValueError):
             return jsonify({"error": "Invalid dosage value"}), 400
-    return jsonify({"status": "OK", "data": data}), 200
-
-
 
     if anesthesia_type == "combined":
         anesthesia = CombinedAnesthesia(patient_data)
