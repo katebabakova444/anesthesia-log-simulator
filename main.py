@@ -1,5 +1,5 @@
 from patient import Patient
-from storage import save_log
+from storage import save_to_db
 from utils import validate_age, validate_weight, get_asa_multiplier
 from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
 
@@ -65,7 +65,7 @@ def main():
             technique=anesthesia.block_type.capitalize() + " block"
         )
 
-    save_log(**log_kwargs)
+    save_to_db(**log_kwargs)
     print("\nLogged to anesthesia_log.csv")
 
 if __name__ == "__main__":

@@ -1,10 +1,10 @@
 import unittest
 from utils import validate_age, validate_weight
-from storage import save_log
+from storage import save_to_db
 from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
 import os
 import csv
-
+import sqlite3
 class TestUtils(unittest.TestCase):
     def test_validate_age_valid(self):
         self.assertTrue(validate_age(38))
@@ -53,36 +53,43 @@ class TestRegionalAnesthesia(unittest.TestCase):
 
 class TestStorage(unittest.TestCase):
     def test_log_patient_data(self):
-        test_filename = "test_anesthesia_log.csv"
+        db_filename = "test_anesthesia_log.db"
+        if os.path.exists(db_filename):
+            os.remove(db_filename)
         name = "Test"
         age = 34
         weight = 70
-        dosage = "120 mg"
-        protocol = "Test Protocol"
-        drug = "TestDrug"
+        asa_class = "II"
         anesthesia_type = "test_type"
-        save_log(
+        drug = "TestDrug"
+        dosage = "120 mg"
+        technique = "Test technique"
+
+        save_to_db(
             name=name,
             age=age,
             weight=weight,
+            asa_class=asa_class,
             anesthesia_type=anesthesia_type,
             drug=drug,
             dosage=dosage,
-            protocol=protocol,
-            filename=test_filename,
+            technique=technique,
+            filename=db_filename
         )
 
-        with open(test_filename, newline="") as file:
-            reader = csv.DictReader(file)
-            rows = list(reader)
-            self.assertGreater(len(rows), 0)
-            last_entry = rows[-1]
-            self.assertEqual(last_entry["name"], name)
-            self.assertEqual(int(last_entry["age"]), age)
-            self.assertEqual(float(last_entry["weight"]), weight)
-            self.assertEqual(last_entry["anesthesia_type"], anesthesia_type)
-            self.assertEqual(last_entry["drug"], drug)
-            self.assertEqual(last_entry["dosage"], dosage)
+        conn = sqlite3.connect(db_filename)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM logs ORDER BY id DESC LIMIT 1")
+        row = cursor.fetchone()
+        conn.close()
 
-        os.remove(test_filename)
+        self.assertIsNotNone(row)
+        self.assertEqual(row[2], name)
+        self.assertEqual(row[3], age)
+        self.assertEqual(float(row[4]), weight)
+        self.assertEqual(row[5], asa_class)
+        self.assertEqual(row[6], anesthesia_type)
+        self.assertEqual(row[10], drug)
+        self.assertEqual(row[11], dosage)
+        self.assertEqual(row[12], technique)
 
