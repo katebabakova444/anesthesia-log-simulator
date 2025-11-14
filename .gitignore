@@ -15,5 +15,4 @@ env/
 
 # Logs
 *.log
-anesthesia_log.csv
-test_anesthesia_log.csv
+*.db

@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
-from storage import save_to_db, load_logs
+from storage import save_to_db, load_logs, load_filtered_logs
 from utils import validate_patient_data, prepare_log_entry
 
 app = Flask(__name__)
@@ -18,7 +18,8 @@ def generate_anesthesia():
     block_type = data.get("block_type", "spinal")
     dosage = data.get("dosage")
     try:
-        row = prepare_log_entry(patient_data, anesthesia_type, doses, block_type)
+        row = prepare_log_entry(patient_data, anesthesia_type, dosage, block_type)
+        return jsonify({"message": "Entry created"}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
@@ -27,4 +28,11 @@ def get_logs():
     logs = load_logs()
     return jsonify(logs), 200
 
+@app.route("/logs/filter", methods=["GET"])
+def get_filter_logs():
+    filters = request.args.to_dict()
+    logs = load_filtered_logs(filters)
+    return jsonify(logs), 200
 
+if __name__== '__main__':
+    app.run(debug=True)

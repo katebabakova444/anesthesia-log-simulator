@@ -40,4 +40,26 @@ def load_logs():
     cursor.execute("SELECT * FROM logs")
     columns = [description[0] for description in cursor.description]
     rows = cursor.fetchall()
-    return [dict(zip(columns, rows)) for row in rows]
+    conn.close()
+    return [dict(zip(columns, row)) for row in rows]
+
+def load_filtered_logs(filters):
+    conn = sqlite3.connect("anesthesia.db")
+    cursor = conn.cursor()
+
+    base_query = "SELECT * FROM LOGS"
+    values = []
+    if filters:
+        conditions = []
+        for key, value in filters.items():
+            conditions.append(f"{key} = ?")
+            values.append(value)
+        base_query += " WHERE " + " AND ".join(conditions)
+
+    cursor.execute(base_query, values)
+    columns = [description[0] for description in cursor.description]
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(zip(columns, row)) for row in rows]
+
+
