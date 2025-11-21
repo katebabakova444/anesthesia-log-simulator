@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
 from storage import save_to_db, load_logs, load_filtered_logs
 from utils import validate_patient_data, prepare_log_entry
-
+import sqlite3
 app = Flask(__name__)
 @app.route('/anesthesia', methods=['POST'])
 def generate_anesthesia():
@@ -33,6 +33,19 @@ def get_filter_logs():
     filters = request.args.to_dict()
     logs = load_filtered_logs(filters)
     return jsonify(logs), 200
+
+@app.route("/logs/<int:log_id>", methods=["DELETE"])
+def delete_log(log_id):
+    conn = sqlite3.connect("anesthesia.db")
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM logs WHERE id = ?", (log_id,))
+    conn.commit()
+    deleted_rows = cursor.rowcount
+    conn.close()
+    if deleted_rows == 0:
+        return jsonify({"error": "Log not found"}), 404
+    return jsonify({"message": f"Log with id {log_id} deleted"}), 200
 
 if __name__== '__main__':
     app.run(debug=True)
