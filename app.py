@@ -3,25 +3,51 @@ from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
 from storage import save_to_db, load_logs, load_filtered_logs
 from utils import validate_patient_data, prepare_log_entry
 import sqlite3
+
 app = Flask(__name__)
 @app.route('/anesthesia', methods=['POST'])
 def generate_anesthesia():
     data = request.get_json()
+
     if not data:
         return jsonify({"error": "No input data provided"}), 400
+
     valid, result = validate_patient_data(data)
     if not valid:
         return jsonify({"error": result}), 400
+
     patient_data = result
 
-    anesthesia_type = data.get("anesthesia_type")
-    block_type = data.get("block_type", "spinal")
-    dosage = data.get("dosage")
+    anesthesia_type_name = data.get("anesthesia_type")
+    block_type = data.get("block_type")
+
+    if anesthesia_type_name == "combined":
+        anesthesia_type = CombinedAnesthesia(patient_data)
+    elif anesthesia_type_name == "regional":
+        anesthesia_type = RegionalAnesthesia(patient_data, block_type=data.get("block_type"))
+    else:
+        return jsonify({"error": "Unknown anesthesia type"}), 400
     try:
-        row = prepare_log_entry(patient_data, anesthesia_type, dosage, block_type)
-        return jsonify({"message": "Entry created"}), 200
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
+        protocol_text, doses = anesthesia_type.generate_protocol()
+
+        save_to_db(
+            name=patient_data["name"],
+            age=patient_data["age"],
+            weight=patient_data["weight"],
+            asa_class=patient_data["asa_class"],
+            anesthesia_type=anesthesia_type_name,
+            block_type=block_type,
+            protocol=protocol_text,
+            doses=doses
+        )
+        return jsonify({
+            "message": "Entry created",
+            "protocol": protocol_text,
+            "doses": doses
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to generate protocol: {str(e)}"}), 400
+
 
 @app.route("/logs", methods=["GET"])
 def get_logs():

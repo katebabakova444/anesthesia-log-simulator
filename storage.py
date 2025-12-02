@@ -1,36 +1,45 @@
 import csv
 import os
 import datetime
+import json
 import sqlite3
-def save_to_db(**kwargs):
-    filename = kwargs.get("filename", "anesthesia.db")
-    conn = sqlite3.connect(filename)
+def save_to_db(name, age, weight, asa_class, anesthesia_type, block_type, protocol, doses):
+    conn = sqlite3.connect("anesthesia.db")
     cursor = conn.cursor()
+
     cursor.execute("""
-         CREATE TABLE IF NOT EXISTS logs (
-         id INTEGER PRIMARY KEY AUTOINCREMENT,
-         timestamp TEXT,
-         name TEXT,
-         age INTEGER,
-         weight REAL,
-         asa_class TEXT,
-         anesthesia_type TEXT,
-         propofol REAL,
-         fentanyl REAL,
-         sevoflurane REAL,
-         drug TEXT,
-         dosage TEXT,
-         technique TEXT
-         )
-    """)
-    columns = ["timestamp", "name", "age", "weight", "asa_class", "anesthesia_type", "propofol", "fentanyl",
-               "sevoflurane", "drug", "dosage", "technique"]
-    kwargs["timestamp"] = datetime.datetime.now().isoformat()
-    values = tuple(kwargs.get(col, "") for col in columns)
-    cursor.execute(
-        f"INSERT INTO logs ({','.join(columns)}) VALUES ({','.join(['?']*len(columns))})",
-        values
+    CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        age INTEGER,
+        weight REAL,
+        asa_class TEXT,
+        anesthesia_type TEXT,
+        block_type TEXT,
+        protocol TEXT,
+        doses TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
+    """)
+    if isinstance(protocol, list):
+        protocol = "\n".join(protocol)
+    doses_json = json.dumps(doses)
+
+    cursor.execute("""
+        INSERT INTO logs 
+        (name, age, weight, asa_class, anesthesia_type, block_type, protocol, doses)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        age,
+        weight,
+        asa_class,
+        anesthesia_type,
+        block_type,
+        protocol,
+        json.dumps(doses)
+    ))
+
     conn.commit()
     conn.close()
 

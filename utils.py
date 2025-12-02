@@ -1,5 +1,6 @@
 import json
 
+
 def validate_age(age):
     return 0 < age < 120
 def validate_weight(weight):
@@ -40,7 +41,7 @@ def validate_patient_data(data):
         "asa_class": asa_class
     }
 
-def prepare_log_entry(patient_data, anesthesia_type, doses, block_type=None):
+def prepare_log_entry(patient_data, anesthesia_type, dosage, block_type=None):
     from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
     if anesthesia_type not in ["combined", "regional"]:
         raise ValueError("Invalid anesthesia type")
@@ -54,7 +55,10 @@ def prepare_log_entry(patient_data, anesthesia_type, doses, block_type=None):
             raise ValueError("Invalid dosage value")
 
     if anesthesia_type == "combined":
+        if not block_type:
+            raise ValueError("Block type required for regional anesthesia")
         anesthesia = CombinedAnesthesia(patient_data)
+
     elif anesthesia_type == "regional":
         anesthesia = RegionalAnesthesia(patient_data, block_type)
     else:

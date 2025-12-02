@@ -17,7 +17,7 @@ class CombinedAnesthesia(AnesthesiaType):
         fentanyl_dose = round(weight * 1.5 * multiplier)
         sevoflurane_range = "2-3% inspiring concentration"
 
-        protocol = (
+        protocol = [
             f"Anesthesia Protocol: Combined IV + Inhalitional\n\n"
             f"ASA Class: {asa_class}\n"
             f"Induction:\n"
@@ -27,7 +27,7 @@ class CombinedAnesthesia(AnesthesiaType):
             f"Maintenance:\n"
             f"Monitor: SpO2, EtCO2, BP, HR\n"
             f"Note: Dosages may require adjustment based on comorbidities and clinical status.\n"
-        )
+        ]
         doses = {
             "propofol": f"{propofol_dose} mg",
             "fentanyl": f"{fentanyl_dose} mcg",
@@ -58,7 +58,7 @@ class RegionalAnesthesia(AnesthesiaType):
         else:
             return f"Error: Invalid block type."
         technique = "Single-shot spinal block" if self.block_type == "spinal" else "Incremental epidural"
-        protocol = (
+        protocol = [
             f"Anesthesia Protocol: {self.block_type.capitalize()}\n"
             f"ASA Class: {asa_class}\n"
             f"Dose(Bupivacaine): {dose} mg\n"
@@ -66,7 +66,7 @@ class RegionalAnesthesia(AnesthesiaType):
             f"Monitoring: BP, HR, sensory/motor level\n"
             f"Note: {note}\n"
             f"Max safe dose: {max_dose} mg"
-        )
+        ]
         doses = {
             "bupivacaine": f"{dose} mg",
             "concentration": concentration,
