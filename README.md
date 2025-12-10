@@ -1,162 +1,109 @@
-# Anesthesia Log Simulator
+#  Anesthesia Log Simulator — Backend Learning Project
+A Python backend project where I combine my medical background with my journey into software engineering.
+This project started as a simple CLI calculator and has grown into a fully structured backend service with validation, SQLite storage, API endpoints, and deployment.
 
-A Python console + API application that calculates recommended anesthesia dosages based on patient data. Built with a focus on input validation, modular logic, and file handling. This project reflects my transition from a clinical anesthesiologist to a backend-focused software developer.
-
----
-
-## Features
-
-- Collects patient data via CLI (name, age, weight, ASA class)
-- User chooses anesthesia type: Combined IV + Inhalational or Regional (Spinal/Epidural)
-- Calculates drug dosages based on type and weight
-- Adjusts dosages dynamically based on ASA class
-- Recommends appropriate anesthesia protocol with clinical notes
-- Logs session data to a `.csv` file with timestamp
-- REST API endpoint for JSON input/output using Flask
-- OOP-based design (inheritance, polymorphism, separation of concerns)
-- Input validation with edge-case handling
-- Fully unit tested (validation, calculations, logging)
+My goal with this project is to learn by building — refactoring, improving architecture, and adding real backend features step by step.
 
 ---
 
-## Planned Enhancements
+##  What This Project Does
+The Anesthesia Log Simulator allows you to:
 
-Planned Improvements
-- Add dosage warnings for pediatric and geriatric edge cases
-- Add HTML form interface for direct web input
-- Host public version on Render or Railway
-- Add SQL backend for persistent case storage
+- Calculate anesthesia drug dosages based on patient data
+- Generate a formatted anesthesia protocol (combined or regional)
+- Validate patient input (age, weight, fields)
+- Store logs in a **SQLite database**
+- Retrieve logs
+- Filter logs
+- Delete logs
+- Use a REST API to interact with the system
 
----
-
-## Technologies Used
-
-- Python 3.12+
-- Standard Library only (`datetime`, `csv`, `unittest`, etc.)
-- Flask (for REST API)
+It is a simple but realistic medical logging tool built for educational purposes.
 
 ---
 
+##  Why I Built This Project
+As someone transitioning from anesthesiology into backend engineering, I wanted a project that:
 
-##  File Structure
-📁 anesthesia_log_simulator/
-├── main.py              # CLI interface and main app logic
-├── app.py               # Flask API endpoint
-├── patient.py           # Patient data class
-├── storage.py           # Data logging to file
-├── anesthesia_types.py  # Protocol recommendation
-├── utils.py             # Input validators and ASA logic
-├── test_utils.py        # Unit tests
-├── requirements.txt
-└── README.md            
+1. Uses logic I worked with every day
+2. Helps me practice real backend patterns
+3. Allows continuous refactoring and growth
+4. Shows clear learning progression for apprenticeship programs
+
+The first version was a small CLI tool.
+Now it’s a structured backend service with an API, database, validation layer, and unit tests — and I continue improving it.
 
 ---
 
-##  How to Run (CLI)
+##  Tech Stack & Features
 
-1. Make sure you have Python 3 installed.
-2. Clone the repository:
-```bash
-git clone https://github.com/katebabakova444/anesthesia_log_simulator.git
-cd anesthesia_log_simulator
-```
----
-## Example output
-Enter patient name: John Doe
-Enter patient age: 45  
-Enter patient weight (kg): 80  
-Enter ASA class (I-V): [default: I]: II
+### **Backend**
+- Python
+- Flask
+- SQLite3
+- Custom validation logic
+- Modular architecture (separated into utils, storage, types, routes)
 
-Select anesthesia type:
-1. Regional Anesthesia
-2. Combined IV+Inhalational Anesthesia
-- Enter number: 2
+### **Core Features**
+- Patient creation
+- Drug dose calculations
+- Protocol generation (Combined / Regional)
+- JSON serialization for dose dictionaries
+- Date-based logging
+- Structured storage in `anesthesia.db`
 
-Recommended protocol:
-Anesthesia Protocol: Combined IV + Inhalitional
+### **Database**
+- Single `logs` table
+- Auto-creation on write
+- JSON storage for doses
+- Text field storage for protocols
+- Timestamping
 
-ASA Class: II
+### **API Endpoints**
+- `GET /logs` — return all logs
+- `GET /logs/filter` — filter by fields
+- `POST /anesthesia` — create a new protocol + save to DB
+- `DELETE /logs/<id>` — delete a record
 
-**Induction**:
-- **Propofol** 160 mg IV
-- **Fentanyl** 120 mcg IV
-- **Sevoflurane** 2-3% inspiring concentration
-
-**Maintenance**:
-- Monitor: SpO2, EtCO2, BP, HR
-- **Note**: Dosages may require adjustment based on comorbidities and clinical status.
-
----
-
-**Doses**:
-- Propofol: 160 mg
-- Fentanyl: 120 mcg
-- Sevoflurane: 2-3% inspiring concentration
-
-Logged to anesthesia_log.csv
-
+### **Validation**
+- Valid age range
+- Valid weight range
+- Required fields
+- Prevents invalid data from entering the database
 
 ---
 
-## How to Run(API)
-1. Install Flask
-``` bash
-pip install flask
-```
-2. Run the app
-``` bash
-python app.py
-```
-3. The API will be available at:
-http://127.0.0.1:5000/anesthesia
+##  Unit Tests
+I added unit tests to check:
 
-POST /anesthesia
+- Age validation
+- Weight validation
+- Combined anesthesia protocol generation
+- Regional anesthesia protocol generation
+- Correct DB logging
+- Correct values stored in each column
 
-JSON Input Example:
-
-
-```json
-{
-  "name": "Kateryna Babakova",
-  "age": 30,
-  "weight": 60,
-  "asa_class": "II",
-  "anesthesia_type": "combined"
-}
-```
-
-JSON Response:
-
-```json
-{
-  "asa_class": "II",
-  "doses": {
-    "fentanyl": "81 mcg",
-    "propofol": "108 mg",
-    "sevoflurane": "2-3% inspiring concentration"
-  },
-  "protocol": "Anesthesia Protocol: Combined IV + Inhalitional\n\nASA Class: II\nInduction: Propofol 108 mg IV, Fentanyl 81 mcg IV, Sevoflurane 2-3% inspiring concentration\nMaintenance: Monitor SpO2, EtCO2, BP, HR\nNote: Dosages may require adjustment based on comorbidities and clinical status."
-}
-```
-
-
-##  Testing
-
-To run unit tests:
-python -m unittest test_utils.py
+Testing helped me catch several issues, refactor SQL logic, and improve reliability.
 
 ---
 
-##  Author
+##  Deployment
+The API is deployed on Render:
 
-Kateryna Babakova
-Self-taught Python Developer | Background in Anesthesiology
-GitHub (https://github.com/katebabakova444)
+**Live API:**
+https://anesthesia-log-simulator.onrender.com
+
 
 ---
 
-##  Notes
+##  Project Structure
+- app.py — Flask API routes  
+- patient.py — patient logic  
+- anesthesia_types.py — anesthesia classes + protocol generation
+- storage.py — SQLite storage  
+- utils.py — validation  
+- test_utils.py — unit tests  
 
-This app was created as a way to combine my medical background with new technical skills in backend development.
-All logic is handled using Python classes and functions. Data is stored in human-readable format in a .csv file for easy access and auditing.
-It was designed to showcase problem-solving, code structure, and the ability to evolve an idea from a CLI to a scalable API.
+---
+## Author
+Created by Kateryna Babakova (https://github.com/katebabakova444) This project is part of my backend development journey.
