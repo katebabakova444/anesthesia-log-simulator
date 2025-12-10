@@ -5,6 +5,8 @@ from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
 import os
 import csv
 import sqlite3
+import json
+
 class TestUtils(unittest.TestCase):
     def test_validate_age_valid(self):
         self.assertTrue(validate_age(38))
@@ -61,9 +63,9 @@ class TestStorage(unittest.TestCase):
         weight = 70
         asa_class = "II"
         anesthesia_type = "test_type"
-        drug = "TestDrug"
-        dosage = "120 mg"
-        technique = "Test technique"
+        block_type = "test"
+        protocol = "test"
+        doses = "120 mg"
 
         save_to_db(
             name=name,
@@ -71,9 +73,9 @@ class TestStorage(unittest.TestCase):
             weight=weight,
             asa_class=asa_class,
             anesthesia_type=anesthesia_type,
-            drug=drug,
-            dosage=dosage,
-            technique=technique,
+            block_type=block_type,
+            protocol=protocol,
+            doses=doses,
             filename=db_filename
         )
 
@@ -84,12 +86,12 @@ class TestStorage(unittest.TestCase):
         conn.close()
 
         self.assertIsNotNone(row)
-        self.assertEqual(row[2], name)
-        self.assertEqual(row[3], age)
-        self.assertEqual(float(row[4]), weight)
-        self.assertEqual(row[5], asa_class)
-        self.assertEqual(row[6], anesthesia_type)
-        self.assertEqual(row[10], drug)
-        self.assertEqual(row[11], dosage)
-        self.assertEqual(row[12], technique)
+        self.assertEqual(row[1], name)
+        self.assertEqual(row[2], age)
+        self.assertEqual(float(row[3]), weight)
+        self.assertEqual(row[4], asa_class)
+        self.assertEqual(row[5], anesthesia_type)
+        self.assertEqual(row[6], block_type)
+        self.assertEqual(row[7], protocol)
+        self.assertEqual(row[8], json.dumps(doses))
 

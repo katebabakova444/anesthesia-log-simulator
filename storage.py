@@ -3,8 +3,8 @@ import os
 import datetime
 import json
 import sqlite3
-def save_to_db(name, age, weight, asa_class, anesthesia_type, block_type, protocol, doses):
-    conn = sqlite3.connect("anesthesia.db")
+def save_to_db(name, age, weight, asa_class, anesthesia_type, block_type, protocol, doses, filename="anesthesia.db"):
+    conn = sqlite3.connect(filename)
     cursor = conn.cursor()
 
     cursor.execute("""
