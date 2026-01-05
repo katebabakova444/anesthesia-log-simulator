@@ -1,10 +1,8 @@
-import csv
-import os
-import datetime
 import json
 import sqlite3
-def save_to_db(name, age, weight, asa_class, anesthesia_type, block_type, protocol, doses, filename="anesthesia.db"):
-    conn = sqlite3.connect(filename)
+DB_NAME = "anesthesia.db"
+def save_to_db(name, age, weight, asa_class, anesthesia_type, block_type, protocol, doses, DB_NAME):
+    conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -44,7 +42,7 @@ def save_to_db(name, age, weight, asa_class, anesthesia_type, block_type, protoc
     conn.close()
 
 def load_logs():
-    conn = sqlite3.connect("anesthesia.db")
+    conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM logs")
     columns = [description[0] for description in cursor.description]
@@ -53,7 +51,7 @@ def load_logs():
     return [dict(zip(columns, row)) for row in rows]
 
 def load_filtered_logs(filters):
-    conn = sqlite3.connect("anesthesia.db")
+    conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
     base_query = "SELECT * FROM LOGS"
@@ -71,4 +69,13 @@ def load_filtered_logs(filters):
     conn.close()
     return [dict(zip(columns, row)) for row in rows]
 
+def delete_logs(log_id):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
 
+    cursor.execute("DELETE FROM logs WHERE id = ?", (log_id,))
+    conn.commit()
+    deleted_rows = cursor.rowcount
+    conn.close()
+
+    return deleted_rows

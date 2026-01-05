@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from utils import get_asa_multiplier
+from anesthesia.utils import get_asa_multiplier
 class AnesthesiaType(ABC):
     def __init__(self, patient_data):
         self.patient_data = patient_data
@@ -17,7 +17,7 @@ class CombinedAnesthesia(AnesthesiaType):
         fentanyl_dose = round(weight * 1.5 * multiplier)
         sevoflurane_range = "2-3% inspiring concentration"
 
-        protocol = [
+        protocol = (
             f"Anesthesia Protocol: Combined IV + Inhalitional\n\n"
             f"ASA Class: {asa_class}\n"
             f"Induction:\n"
@@ -27,7 +27,8 @@ class CombinedAnesthesia(AnesthesiaType):
             f"Maintenance:\n"
             f"Monitor: SpO2, EtCO2, BP, HR\n"
             f"Note: Dosages may require adjustment based on comorbidities and clinical status.\n"
-        ]
+        )
+
         doses = {
             "propofol": f"{propofol_dose} mg",
             "fentanyl": f"{fentanyl_dose} mcg",
@@ -50,27 +51,28 @@ class RegionalAnesthesia(AnesthesiaType):
             concentration = "0.5% hyperbaric"
             max_dose = 20
             note = "Single-shot spinal block. Monitor for hypotension."
+            title = "Spinal"
         elif self.block_type == "epidural":
             dose = round(min(weight * 2.5 * multiplier, 175))
             concentration = "0.25% or 0.5%"
             max_dose = 175
             note = "Titrate incremantally. Monitor dermatomal spread."
+            title = "Epidural"
         else:
-            return f"Error: Invalid block type."
-        technique = "Single-shot spinal block" if self.block_type == "spinal" else "Incremental epidural"
-        protocol = [
-            f"Anesthesia Protocol: {self.block_type.capitalize()}\n"
+            raise ValueError("Error: Invalid block type.")
+
+        protocol = (
+            f"Anesthesia Protocol: {title}\n"
             f"ASA Class: {asa_class}\n"
             f"Dose(Bupivacaine): {dose} mg\n"
             f"Concentration: {concentration}\n"
             f"Monitoring: BP, HR, sensory/motor level\n"
             f"Note: {note}\n"
             f"Max safe dose: {max_dose} mg"
-        ]
+        )
         doses = {
             "bupivacaine": f"{dose} mg",
             "concentration": concentration,
             "max_safe_dose": f"{max_dose} mg",
-            "technique": technique
         }
         return protocol, doses

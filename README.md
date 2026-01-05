@@ -1,24 +1,35 @@
-#  Anesthesia Log Simulator — Backend Learning Project
-A Python backend project where I combine my medical background with my journey into software engineering.
-This project started as a simple CLI calculator and has grown into a fully structured backend service with validation, SQLite storage, API endpoints, and deployment.
+# Anesthesia Log Simulator  
+**Backend Engineering Project (Python / Flask / SQLite)**
 
-My goal with this project is to learn by building — refactoring, improving architecture, and adding real backend features step by step.
+Anesthesia Log Simulator is a backend-focused Python project that combines my medical background in anesthesiology with my transition into software engineering.
+
+The project started as a simple CLI dosage calculator and evolved into a structured backend application with a REST API, persistent storage, and automated tests.  
+Its primary goal is to demonstrate how I learn backend engineering by building, refactoring, testing, and improving real-world logic step by step.
 
 ---
 
-##  What This Project Does
+## Project Goals
+
+- Apply backend engineering principles to a real, domain-specific problem
+- Practice clean architecture and separation of concerns
+- Build a REST API with validation and persistence
+- Design and test backend logic using unit and integration tests
+- Show measurable growth between project iterations
+
+---
+
+## What This Project Does
+
 The Anesthesia Log Simulator allows you to:
 
 - Calculate anesthesia drug dosages based on patient data
-- Generate a formatted anesthesia protocol (combined or regional)
-- Validate patient input (age, weight, fields)
-- Store logs in a **SQLite database**
-- Retrieve logs
-- Filter logs
-- Delete logs
-- Use a REST API to interact with the system
-
-It is a simple but realistic medical logging tool built for educational purposes.
+- Generate structured anesthesia protocols:
+  - Regional (epidural/spinal)
+  - Combined anesthesia
+- Validate clinical input (age, weight, ASA class)
+- Demonstrates stateful backend behavior with persistent storage
+- Retrieve saved anesthesia logs via API
+- Handle API errors and invalid input
 
 ---
 
@@ -31,7 +42,17 @@ As someone transitioning from anesthesiology into backend engineering, I wanted 
 4. Shows clear learning progression for apprenticeship programs
 
 The first version was a small CLI tool.
-Now it’s a structured backend service with an API, database, validation layer, and unit tests — and I continue improving it.
+Now it’s a structured backend service with an API, database, validation layer, and test coverage — and I continue improving it.
+
+---
+
+## Architecture Overview
+- app.py — Flask API routes  
+- patient.py — patient logic  
+- anesthesia_types.py — anesthesia classes + protocol generation
+- storage.py — SQLite storage  
+- utils.py — validation and helpers
+- tests/ — unit and integration tests
 
 ---
 
@@ -41,68 +62,57 @@ Now it’s a structured backend service with an API, database, validation layer,
 - Python
 - Flask
 - SQLite3
-- Custom validation logic
-- Modular architecture (separated into utils, storage, types, routes)
+- pytest
+- unittest
+
 
 ### **Core Features**
-- Patient creation
-- Drug dose calculations
+- Create anesthesia log entries from validated patient input
 - Protocol generation (Combined / Regional)
-- JSON serialization for dose dictionaries
-- Date-based logging
-- Structured storage in `anesthesia.db`
-
-### **Database**
-- Single `logs` table
-- Auto-creation on write
-- JSON storage for doses
-- Text field storage for protocols
-- Timestamping
+- Persist logs in SQLite with timestamps
+- Retrieve and filter logs via API
+- Predictable error responses for invalid input
 
 ### **API Endpoints**
 - `GET /logs` — return all logs
-- `GET /logs/filter` — filter by fields
-- `POST /anesthesia` — create a new protocol + save to DB
-- `DELETE /logs/<id>` — delete a record
+- `GET /logs/filter` — filter logs by query params
+- `POST /anesthesia` — validate input, generate protocol, persist to DB
+- `DELETE /logs/<id>` — delete a log record by id
 
 ### **Validation**
 - Valid age range
 - Valid weight range
-- Required fields
+- Required fields must be present
 - Prevents invalid data from entering the database
 
+### **Testing**
+
+**Unit tests(unittest) cover:**
+- Input validation (age, weight)
+- Dose calculations
+- Protocol text generation
+- Storage layer behavior
+
+**Integration tests(pytest) cover API-level behavior:**
+- Request/respond validation
+- Error handling
+- Database side effects
+
+## Running tests
+```bush
+python -m pytest
+```
 ---
-
-##  Unit Tests
-I added unit tests to check:
-
-- Age validation
-- Weight validation
-- Combined anesthesia protocol generation
-- Regional anesthesia protocol generation
-- Correct DB logging
-- Correct values stored in each column
-
-Testing helped me catch several issues, refactor SQL logic, and improve reliability.
-
----
+## Run API locally
+```bush
+python -m anesthesia.app
+```
 
 ##  Deployment
-The API is deployed on Render:
+The API is deployed on Render as a production-style backend service:
 
 **Live API:**
 https://anesthesia-log-simulator.onrender.com
-
-
----
-
-##  Project Structure
-- app.py — Flask API routes  
-- patient.py — patient logic  
-- anesthesia_types.py — anesthesia classes + protocol generation
-- storage.py — SQLite storage  
-- utils.py — validation  
-- test_utils.py — unit tests  
 
 ---
 ## Author

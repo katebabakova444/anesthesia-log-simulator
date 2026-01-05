@@ -1,6 +1,3 @@
-import json
-
-
 def validate_age(age):
     return 0 < age < 120
 def validate_weight(weight):
@@ -41,43 +38,17 @@ def validate_patient_data(data):
         "asa_class": asa_class
     }
 
-def prepare_log_entry(patient_data, anesthesia_type, dosage, block_type=None):
-    from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
-    if anesthesia_type not in ["combined", "regional"]:
-        raise ValueError("Invalid anesthesia type")
-    if anesthesia_type == "regional":
-
-        try:
-           dosage = float(dosage)
-           if dosage < 0:
-               raise ValueError
-        except(TypeError, ValueError):
-            raise ValueError("Invalid dosage value")
-
-    if anesthesia_type == "combined":
-        if not block_type:
-            raise ValueError("Block type required for regional anesthesia")
-        anesthesia = CombinedAnesthesia(patient_data)
-
-    elif anesthesia_type == "regional":
-        anesthesia = RegionalAnesthesia(patient_data, block_type)
-    else:
-        raise ValueError("Invalid anesthesia type")
-
-    protocol, doses = anesthesia.generate_protocol()
-
-    if anesthesia_type == "combined":
-        filtered_doses = {k: doses[k] for k in ["propofol", "fentanyl", "sevoflurane"] if k in doses}
-
-    elif anesthesia_type == "regional":
-        filtered_doses = {k: doses[k] for k in ["drug", "dosage", "technique"] if k in doses}
-    else:
-         filtered_doses = {}
+def prepare_log_entry(patient_data, anesthesia_type, protocol, doses, block_type=None):
     row = {
         "name": patient_data["name"],
         "age": patient_data["age"],
         "weight": patient_data["weight"],
         "asa_class": patient_data["asa_class"],
         "anesthesia_type": anesthesia_type,
-        **filtered_doses
+        "protocol": protocol,
+        **doses
     }
+    if block_type:
+        row["block_type"] = block_type
+
+    return row

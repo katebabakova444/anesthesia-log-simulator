@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
-from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
-from storage import save_to_db, load_logs, load_filtered_logs
-from utils import validate_patient_data, prepare_log_entry
+from anesthesia.anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
+from anesthesia.storage import save_to_db, load_logs, load_filtered_logs, delete_logs, DB_NAME
+from anesthesia.utils import validate_patient_data
 import sqlite3
 
 app = Flask(__name__)
@@ -21,13 +21,18 @@ def generate_anesthesia():
     anesthesia_type_name = data.get("anesthesia_type")
     block_type = data.get("block_type")
 
-    if anesthesia_type_name == "combined":
-        anesthesia_type = CombinedAnesthesia(patient_data)
-    elif anesthesia_type_name == "regional":
-        anesthesia_type = RegionalAnesthesia(patient_data, block_type=data.get("block_type"))
-    else:
-        return jsonify({"error": "Unknown anesthesia type"}), 400
+    if anesthesia_type_name not in ("combined", "regional"):
+        return jsonify({"error": "Invalid anesthesia_type"}), 400
+
+    if anesthesia_type_name == "regional" and not block_type:
+        return jsonify({"error": "block_type is required for regional anesthesia"}), 400
+
     try:
+        if anesthesia_type_name == "combined":
+            anesthesia_type = CombinedAnesthesia(patient_data)
+        else:
+            anesthesia_type = RegionalAnesthesia(patient_data, block_type)
+
         protocol_text, doses = anesthesia_type.generate_protocol()
 
         save_to_db(
@@ -38,16 +43,20 @@ def generate_anesthesia():
             anesthesia_type=anesthesia_type_name,
             block_type=block_type,
             protocol=protocol_text,
-            doses=doses
+            doses=doses,
+            DB_NAME=DB_NAME
         )
         return jsonify({
-            "message": "Entry created",
-            "protocol": protocol_text,
-            "doses": doses
+        "message": "Entry created",
+        "protocol": protocol_text,
+        "doses": doses
         }), 200
-    except Exception as e:
-        return jsonify({"error": f"Failed to generate protocol: {str(e)}"}), 400
 
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    except sqlite3.Error:
+        return jsonify({"error": "Database error"}), 500
 
 @app.route("/logs", methods=["GET"])
 def get_logs():
@@ -61,16 +70,11 @@ def get_filter_logs():
     return jsonify(logs), 200
 
 @app.route("/logs/<int:log_id>", methods=["DELETE"])
-def delete_log(log_id):
-    conn = sqlite3.connect("anesthesia.db")
-    cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM logs WHERE id = ?", (log_id,))
-    conn.commit()
-    deleted_rows = cursor.rowcount
-    conn.close()
-    if deleted_rows == 0:
+def remove_log(log_id):
+    deleted = delete_logs(log_id)
+    if not deleted:
         return jsonify({"error": "Log not found"}), 404
+
     return jsonify({"message": f"Log with id {log_id} deleted"}), 200
 
 if __name__== '__main__':

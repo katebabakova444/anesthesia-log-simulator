@@ -1,9 +1,8 @@
 import unittest
-from utils import validate_age, validate_weight
-from storage import save_to_db
-from anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
+from anesthesia.utils import validate_age, validate_weight
+from anesthesia.storage import save_to_db
+from anesthesia.anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
 import os
-import csv
 import sqlite3
 import json
 
@@ -76,12 +75,12 @@ class TestStorage(unittest.TestCase):
             block_type=block_type,
             protocol=protocol,
             doses=doses,
-            filename=db_filename
+            DB_NAME=db_filename
         )
 
         conn = sqlite3.connect(db_filename)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM logs ORDER BY id DESC LIMIT 1")
+        cursor.execute("SELECT * FROM logs")
         row = cursor.fetchone()
         conn.close()
 
