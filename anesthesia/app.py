@@ -5,6 +5,15 @@ from anesthesia.utils import validate_patient_data
 import sqlite3
 
 app = Flask(__name__)
+
+@app.route("/")
+def healthcheck():
+    return {
+        "service": "Anesthesia Log Simulator",
+        "status": "running",
+        "docs": "See README on GitHub for available endpoints"
+    }
+
 @app.route('/anesthesia', methods=['POST'])
 def generate_anesthesia():
     data = request.get_json()
