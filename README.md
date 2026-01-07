@@ -47,12 +47,27 @@ Now it’s a structured backend service with an API, database, validation layer,
 ---
 
 ## Architecture Overview
-- app.py — Flask API routes  
-- patient.py — patient logic  
-- anesthesia_types.py — anesthesia classes + protocol generation
-- storage.py — SQLite storage  
-- utils.py — validation and helpers
-- tests/ — unit and integration tests
+``` text
+anesthesia_log_simulator/
+├── anesthesia/
+│    ├── app.py                # Flask application entry point (API routes)
+│    ├── patient.py            # Patient domain model
+│    ├── anesthesia_types.py   # Anesthesia protocol definitions and dosage rules
+│    ├── storage.py            # Persistence layer
+│    └── utils.py              # Shared helper functions and validation     
+│ 
+│
+├── tests/
+│   ├── conftest.py           # Pytest shared fixtures
+│   ├── test_api.py           # API endpoint tests
+│   ├── test_api_logs.py      # Logging and persistence tests
+│   ├── test_api_errors.py    # Error handling & validation tests
+│   └── test_utils.py         # Unit tests for core logic
+│
+├── requirements.txt      # Project dependencies
+├── Procfile              # Deployment configuration (Render)
+└── README.md             # Project documentation
+```
 
 ---
 
