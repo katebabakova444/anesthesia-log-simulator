@@ -1,1 +1,1 @@
-web: anesthesia.gunicorn app:app
+web: gunicorn anesthesia.app:app
