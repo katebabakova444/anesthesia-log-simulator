@@ -18,7 +18,7 @@ def test_regional_without_block_type(client):
         "anesthesia_type": "regional"
     }
     response = client.post("/anesthesia", json=payload)
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 def test_invalid_weight(client):
     payload = {

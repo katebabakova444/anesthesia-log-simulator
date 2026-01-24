@@ -48,25 +48,26 @@ Now it’s a structured backend service with an API, database, validation layer,
 
 ## Architecture Overview
 ``` text
-anesthesia_log_simulator/
-├── anesthesia/
-│    ├── app.py                # Flask application entry point (API routes)
-│    ├── patient.py            # Patient domain model
-│    ├── anesthesia_types.py   # Anesthesia protocol definitions and dosage rules
-│    ├── storage.py            # Persistence layer
-│    └── utils.py              # Shared helper functions and validation     
-│ 
+anesthesia/
 │
-├── tests/
-│   ├── conftest.py           # Pytest shared fixtures
-│   ├── test_api.py           # API endpoint tests
-│   ├── test_api_logs.py      # Logging and persistence tests
-│   ├── test_api_errors.py    # Error handling & validation tests
-│   └── test_utils.py         # Unit tests for core logic
+├── app.py                     # Flask API layer (routing, controllers)
+├── anesthesia_service.py      # Service layer: orchestrates validation, dosing, storage
+├── repository.py              # Persistence layer (SQLite)
 │
-├── requirements.txt      # Project dependencies
-├── Procfile              # Deployment configuration (Render)
-└── README.md             # Project documentation
+├── domain/                    # Pure domain logic
+│   ├── patient.py             # Patient model and domain rules
+│   ├── asa.py                 # ASA classifications
+│   ├── anesthesia_types.py    # Dose calculation logic for each anesthesia type
+│   ├── validators.py          # Input validation layer
+│   └── __init__.py
+│
+└── tests/                     # Automated tests
+    ├── conftest.py            # Shared pytest fixtures (temp database, test client)
+    ├── test_api.py            # API endpoint behavior
+    ├── test_api_logs.py       # Logging, storage, filtering
+    ├── test_api_errors.py     # Error handling cases
+    └── test_utils.py          # Unit tests for domain utilities
+
 ```
 
 ---
@@ -85,7 +86,7 @@ anesthesia_log_simulator/
 - Create anesthesia log entries from validated patient input
 - Protocol generation (Combined / Regional)
 - Persist logs in SQLite with timestamps
-- Retrieve and filter logs via API
+- Retrieve, filter and delete logs via API
 - Predictable error responses for invalid input
 
 ### **API Endpoints**
@@ -103,7 +104,7 @@ anesthesia_log_simulator/
 ### **Testing**
 
 **Unit tests(unittest) cover:**
-- Input validation (age, weight)
+- Input validation (age, weight, ASA )
 - Dose calculations
 - Protocol text generation
 - Storage layer behavior

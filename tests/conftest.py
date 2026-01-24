@@ -1,16 +1,16 @@
 import pytest
 from anesthesia.app import app
 import os
-TEST_DB = "test_anesthesia.db"
 
 @pytest.fixture
-def client():
+def client(tmp_path):
+    test_db_path = tmp_path / "test_anesthesia.db"
     app.config["TESTING"] = True
 
-    app.config["DATABASE"] = TEST_DB
+    app.config["DATABASE"] = test_db_path
 
     with app.test_client() as client:
         yield client
 
-    if os.path.exists(TEST_DB):
-        os.remove(TEST_DB)
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)

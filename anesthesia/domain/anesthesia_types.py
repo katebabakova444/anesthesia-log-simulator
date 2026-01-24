@@ -1,18 +1,15 @@
-from abc import ABC, abstractmethod
-from anesthesia.utils import get_asa_multiplier
-class AnesthesiaType(ABC):
-    def __init__(self, patient_data):
-        self.patient_data = patient_data
-
-    @abstractmethod
-    def generate_protocol(self):
-        pass
+from anesthesia.domain.asa import get_asa_multiplier
+from anesthesia.domain.patient import Patient
+class AnesthesiaType:
+    def __init__(self, patient: Patient):
+        self.patient = patient
 
 class CombinedAnesthesia(AnesthesiaType):
     def generate_protocol(self):
-        weight = self.patient_data.get('weight', 70) # default if not entered
-        asa_class = self.patient_data.get('asa_class', 'I')  # default if not entered
+        weight = self.patient.weight
+        asa_class = self.patient.asa_class
         multiplier = get_asa_multiplier(asa_class)
+
         propofol_dose = round(weight * 2 * multiplier)
         fentanyl_dose = round(weight * 1.5 * multiplier)
         sevoflurane_range = "2-3% inspiring concentration"
@@ -37,13 +34,13 @@ class CombinedAnesthesia(AnesthesiaType):
         return protocol, doses
 
 class RegionalAnesthesia(AnesthesiaType):
-    def __init__(self, patient_data, block_type='epidural'):
-        super().__init__(patient_data)
+    def __init__(self, patient: Patient, block_type: str):
+        super().__init__(patient)
         self.block_type = block_type.lower()
 
     def generate_protocol(self):
-        weight = self.patient_data.get('weight', 70)
-        asa_class = self.patient_data.get('asa_class', 'I')
+        weight = self.patient.weight
+        asa_class = self.patient.asa_class
         multiplier = get_asa_multiplier(asa_class)
 
         if self.block_type == "spinal":
