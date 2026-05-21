@@ -1,6 +1,7 @@
-import sqlite3
+import psycopg2
+import psycopg2.extras
 import json
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 class LogRepository:
     def __init__(self, db_path: str):
@@ -8,14 +9,14 @@ class LogRepository:
         self._init_db()
 
     def _connect(self):
-        return sqlite3.connect(self.db_path)
+        return psycopg2.connect(self.db_path)
 
     def _init_db(self):
         with self._connect() as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS logs (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     name TEXT,
                     age INTEGER,
                     weight REAL,
@@ -24,10 +25,11 @@ class LogRepository:
                     block_type TEXT,
                     protocol TEXT,
                     doses TEXT,
-                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
                 """)
             conn.commit()
+
     def save(self, entry: Dict):
         with self._connect() as conn:
             cursor = conn.cursor()
@@ -35,7 +37,7 @@ class LogRepository:
                 """
                 INSERT INTO logs
                 (name, age, weight, asa_class, anesthesia_type, block_type, protocol, doses)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     entry["name"],
@@ -51,12 +53,9 @@ class LogRepository:
             conn.commit()
     def load_all(self) -> List[Dict]:
         with self._connect() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cursor.execute("SELECT * FROM logs")
-            rows = cursor.fetchall()
-            columns = [col[0] for col in cursor.description]
-
-        return [dict(zip(columns, row)) for row in rows]
+        return [dict(row) for row in cursor.fetchall()]
 
     def filter(self, filters: Dict) -> List[Dict]:
         base_query = "SELECT * FROM logs"
@@ -64,20 +63,19 @@ class LogRepository:
         if filters:
             conditions = []
             for key, value in filters.items():
-                conditions.append(f"{key} = ?")
+                conditions.append(f"{key} = %s")
                 values.append(value)
             base_query += " WHERE " + " AND ".join(conditions)
 
         with self._connect() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cursor.execute(base_query, values)
-            rows = cursor.fetchall()
-            columns = [col[0] for col in cursor.description]
-        return [dict(zip(columns, row)) for row in rows]
+        return [dict(row) for row in cursor.fetchall()]
+
     def delete(self, log_id: int):
         with self._connect() as conn:
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM logs WHERE id = ?", (log_id,))
+            cursor.execute("DELETE FROM logs WHERE id = %s", (log_id,))
             deleted = cursor.rowcount
             conn.commit()
         return deleted > 0

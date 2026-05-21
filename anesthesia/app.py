@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "anesthesia.db")
+DB_PATH = os.environ.get("DB_PATH", "postgresql://localhost/anesthesia_db")
 repo = LogRepository(DB_PATH)
 service = AnesthesiaService(repo)
 
