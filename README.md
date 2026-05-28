@@ -52,7 +52,7 @@ anesthesia/
 │
 ├── app.py                     # Flask API layer (routing, controllers)
 ├── anesthesia_service.py      # Service layer: orchestrates validation, dosing, storage
-├── repository.py              # Persistence layer (SQLite)
+├── repository.py              # Persistence layer (PostgreSQL)
 │
 ├── domain/                    # Pure domain logic
 │   ├── patient.py             # Patient model and domain rules
@@ -77,7 +77,7 @@ anesthesia/
 ### **Backend**
 - Python
 - Flask
-- SQLite3
+- PostgreSQL
 - pytest
 - unittest
 

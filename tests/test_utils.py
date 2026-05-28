@@ -1,13 +1,12 @@
 import unittest
 import os
-import sqlite3
 import json
 from anesthesia.domain.anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
 from anesthesia.domain.asa import get_asa_multiplier
 from anesthesia.repository import LogRepository
 from anesthesia.domain.validators import PatientValidator
 from anesthesia.domain.patient import Patient
-
+import psycopg2
 class TestUtils(unittest.TestCase):
     def setUp(self):
         self.valid_data = {
@@ -167,10 +166,11 @@ class TestRegionalAnesthesia(unittest.TestCase):
 
 class TestStorage(unittest.TestCase):
     def test_log_patient_data(self):
-        db_filename = "test_anesthesia_log.db"
-        if os.path.exists(db_filename):
-            os.remove(db_filename)
-        repo = LogRepository(db_filename)
+        test_dsn = os.getenv(
+            "TEST_DATABASE_URL",
+            "dbname=anesthesia_db user=katerynababakova host=localhost port=5432"
+        )
+        repo = LogRepository(test_dsn)
 
         entry = {
            "name": "Test",
@@ -184,20 +184,25 @@ class TestStorage(unittest.TestCase):
         }
 
         repo.save(entry)
-
-        conn = sqlite3.connect(db_filename)
+        conn = psycopg2.connect(test_dsn)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM logs")
+        cursor.execute("""
+        SELECT name, age, weight, asa_class, anesthesia_type, block_type, protocol, doses
+        FROM logs
+        WHERE name = %s
+        ORDER BY id DESC
+        LIMIT 1
+        """, ("Test",))
         row = cursor.fetchone()
-        conn.close()
+
 
         self.assertIsNotNone(row)
-        self.assertEqual(row[1], entry["name"])
-        self.assertEqual(row[2], entry["age"])
-        self.assertEqual(float(row[3]), entry["weight"])
-        self.assertEqual(row[4], entry["asa_class"])
-        self.assertEqual(row[5], entry["anesthesia_type"])
-        self.assertEqual(row[6], entry["block_type"])
-        self.assertEqual(row[7], entry["protocol"])
-        self.assertEqual(row[8], json.dumps(entry["doses"]))
+        self.assertEqual(row[0], entry["name"])
+        self.assertEqual(row[1], entry["age"])
+        self.assertEqual(float(row[2]), entry["weight"])
+        self.assertEqual(row[3], entry["asa_class"])
+        self.assertEqual(row[4], entry["anesthesia_type"])
+        self.assertEqual(row[5], entry["block_type"])
+        self.assertEqual(row[6], entry["protocol"])
+        self.assertEqual(row[7], json.dumps(entry["doses"]))
 
