@@ -41,9 +41,10 @@ class AnesthesiaService:
                 "protocol": protocol_text,
                 "doses": doses,
             }
-            self.repository.save(entry)
+            self.repository.save_orm(entry)
 
-        except Exception:
+        except Exception as e:
+            print(f"ORM error: {e}")
             return {"error": "Internal database error"}, 500
 
         return {

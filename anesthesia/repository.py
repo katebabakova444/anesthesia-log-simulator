@@ -1,6 +1,7 @@
 import psycopg2
 import psycopg2.extras
 import json
+from models import Session, Log
 from typing import List, Dict
 
 class LogRepository:
@@ -30,27 +31,27 @@ class LogRepository:
                 """)
             conn.commit()
 
-    def save(self, entry: Dict):
-        with self._connect() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT INTO logs
-                (name, age, weight, asa_class, anesthesia_type, block_type, protocol, doses)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """,
-                (
-                    entry["name"],
-                    entry["age"],
-                    entry["weight"],
-                    entry["asa_class"],
-                    entry["anesthesia_type"],
-                    entry["block_type"],
-                    entry["protocol"],
-                    json.dumps(entry["doses"])
-                )
+    def save_orm(self, entry: Dict):
+        session = Session()
+        try:
+            log = Log(
+            name=entry["name"],
+            age=entry["age"],
+            weight=entry["weight"],
+            asa_class=entry["asa_class"],
+            anesthesia_type=entry["anesthesia_type"],
+            block_type=entry["block_type"],
+            protocol=entry["protocol"],
+            doses=json.dumps(entry["doses"])
             )
-            conn.commit()
+            session.add(log)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
     def load_all(self) -> List[Dict]:
         with self._connect() as conn:
             cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
