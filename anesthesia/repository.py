@@ -1,82 +1,101 @@
-import psycopg2
-import psycopg2.extras
 import json
-from models import Session, Log
+from anesthesia.models import Session, AnesthesiaLog, Patient
 from typing import List, Dict
 
-class LogRepository:
-    def __init__(self, db_path: str):
-        self.db_path = db_path
-        self._init_db()
+class SQLAlchemyLogRepository:
 
-    def _connect(self):
-        return psycopg2.connect(self.db_path)
-
-    def _init_db(self):
-        with self._connect() as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS logs (
-                    id SERIAL PRIMARY KEY,
-                    name TEXT,
-                    age INTEGER,
-                    weight REAL,
-                    asa_class TEXT,
-                    anesthesia_type TEXT,
-                    block_type TEXT,
-                    protocol TEXT,
-                    doses TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-                """)
-            conn.commit()
-
-    def save_orm(self, entry: Dict):
+    def save_patient(self, entry: Dict):
         session = Session()
         try:
-            log = Log(
-            name=entry["name"],
-            age=entry["age"],
-            weight=entry["weight"],
-            asa_class=entry["asa_class"],
-            anesthesia_type=entry["anesthesia_type"],
-            block_type=entry["block_type"],
-            protocol=entry["protocol"],
-            doses=json.dumps(entry["doses"])
+            patient = Patient(
+                name=entry["name"],
+                age=entry["age"],
+                weight=entry["weight"]
             )
-            session.add(log)
+            session.add(patient)
             session.commit()
+            return patient.to_dict()
         except Exception as e:
             session.rollback()
             raise e
         finally:
             session.close()
 
-    def load_all(self) -> List[Dict]:
-        with self._connect() as conn:
-            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            cursor.execute("SELECT * FROM logs")
-        return [dict(row) for row in cursor.fetchall()]
+    def save_anesthesia_log(self, patient_id: int, entry: Dict):
+        session = Session()
+        try:
+            log = AnesthesiaLog(
+                patient_id=patient_id,
+                asa_class=entry["asa_class"],
+                anesthesia_type=entry["anesthesia_type"],
+                block_type=entry.get("block_type"),
+                protocol=entry.get("protocol"),
+                doses=json.dumps(entry.get("doses", {}))
+            )
+            session.add(log)
+            session.commit()
+            return log.to_dict()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
 
-    def filter(self, filters: Dict) -> List[Dict]:
-        base_query = "SELECT * FROM logs"
-        values = []
-        if filters:
-            conditions = []
+    def get_patient(self, patient_id: int):
+        session = Session()
+        try:
+            patient = session.query(Patient).filter_by(id=patient_id).first()
+
+            if not patient:
+                return None
+            return patient.to_dict()
+        finally:
+            session.close()
+
+    def get_patient_logs(self, patient_id: int):
+        session = Session()
+        try:
+            logs = session.query(AnesthesiaLog).filter_by(patient_id=patient_id).all()
+            return [log.to_dict() for log in logs]
+        finally:
+            session.close()
+
+    def load_all(self):
+        session = Session()
+        try:
+            logs = session.query(AnesthesiaLog).all()
+            return [log.to_dict() for log in logs]
+        finally:
+            session.close()
+    def filter(self, filters: Dict):
+        session = Session()
+        try:
+            query = session.query(AnesthesiaLog)
+            allowed_fields = {
+                "asa_class": AnesthesiaLog.asa_class,
+                "anesthesia_type": AnesthesiaLog.anesthesia_type,
+                "block_type": AnesthesiaLog.block_type,
+                "patient_id": AnesthesiaLog.patient_id,
+            }
             for key, value in filters.items():
-                conditions.append(f"{key} = %s")
-                values.append(value)
-            base_query += " WHERE " + " AND ".join(conditions)
-
-        with self._connect() as conn:
-            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            cursor.execute(base_query, values)
-        return [dict(row) for row in cursor.fetchall()]
-
+                if key in allowed_fields:
+                    query = query.filter(allowed_fields[key] == value)
+            logs = query.all()
+            return [log.to_dict() for log in logs]
+        finally:
+            session.close()
     def delete(self, log_id: int):
-        with self._connect() as conn:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM logs WHERE id = %s", (log_id,))
-            deleted = cursor.rowcount
-            conn.commit()
-        return deleted > 0
+        session = Session()
+        try:
+            log = session.query(AnesthesiaLog).filter_by(id=log_id).first()
+            if not log:
+                return False
+            session.delete(log)
+            session.commit()
+            return True
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+

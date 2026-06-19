@@ -1,12 +1,11 @@
 from flask import Flask, request, jsonify
 from anesthesia.anesthesia_service import AnesthesiaService
-from anesthesia.repository import LogRepository
-import os
+from anesthesia.repository import SQLAlchemyLogRepository
+
 
 app = Flask(__name__)
 
-DB_PATH = os.environ.get("DB_PATH", "postgresql://localhost/anesthesia_db")
-repo = LogRepository(DB_PATH)
+repo = SQLAlchemyLogRepository()
 service = AnesthesiaService(repo)
 
 @app.route("/")

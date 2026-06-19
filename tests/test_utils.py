@@ -1,12 +1,13 @@
 import unittest
-import os
 import json
 from anesthesia.domain.anesthesia_types import CombinedAnesthesia, RegionalAnesthesia
 from anesthesia.domain.asa import get_asa_multiplier
-from anesthesia.repository import LogRepository
+from anesthesia.repository import SQLAlchemyLogRepository
 from anesthesia.domain.validators import PatientValidator
 from anesthesia.domain.patient import Patient
-import psycopg2
+
+
+
 class TestUtils(unittest.TestCase):
     def setUp(self):
         self.valid_data = {
@@ -166,11 +167,7 @@ class TestRegionalAnesthesia(unittest.TestCase):
 
 class TestStorage(unittest.TestCase):
     def test_log_patient_data(self):
-        test_dsn = os.getenv(
-            "TEST_DATABASE_URL",
-            "dbname=anesthesia_db user=katerynababakova host=localhost port=5432"
-        )
-        repo = LogRepository(test_dsn)
+        repo = SQLAlchemyLogRepository()
 
         entry = {
            "name": "Test",
@@ -183,26 +180,33 @@ class TestStorage(unittest.TestCase):
            "doses": {"dose": "120 mg"},
         }
 
-        repo.save(entry)
-        conn = psycopg2.connect(test_dsn)
-        cursor = conn.cursor()
-        cursor.execute("""
-        SELECT name, age, weight, asa_class, anesthesia_type, block_type, protocol, doses
-        FROM logs
-        WHERE name = %s
-        ORDER BY id DESC
-        LIMIT 1
-        """, ("Test",))
-        row = cursor.fetchone()
+        patient = repo.save_patient({
+            "name": entry["name"],
+            "age": entry["age"],
+            "weight": entry["weight"],
+        })
+        log = repo.save_anesthesia_log(patient["id"], {
+            "asa_class": entry["asa_class"],
+            "anesthesia_type": entry["anesthesia_type"],
+            "block_type": entry["block_type"],
+            "protocol": entry["protocol"],
+            "doses": entry["doses"],
+        })
+        found_patient = repo.get_patient(patient["id"])
+        patient_logs = repo.get_patient_logs(patient["id"])
 
 
-        self.assertIsNotNone(row)
-        self.assertEqual(row[0], entry["name"])
-        self.assertEqual(row[1], entry["age"])
-        self.assertEqual(float(row[2]), entry["weight"])
-        self.assertEqual(row[3], entry["asa_class"])
-        self.assertEqual(row[4], entry["anesthesia_type"])
-        self.assertEqual(row[5], entry["block_type"])
-        self.assertEqual(row[6], entry["protocol"])
-        self.assertEqual(row[7], json.dumps(entry["doses"]))
+
+        self.assertIsNotNone(found_patient)
+        self.assertEqual(found_patient["name"], entry["name"])
+        self.assertEqual(found_patient["age"], entry["age"])
+        self.assertEqual(float(found_patient["weight"]), entry["weight"])
+        self.assertEqual(len(patient_logs), 1)
+        saved_log = patient_logs[0]
+        self.assertEqual(saved_log["patient_id"], patient["id"])
+        self.assertEqual(saved_log["asa_class"], entry["asa_class"])
+        self.assertEqual(saved_log["anesthesia_type"], entry["anesthesia_type"])
+        self.assertEqual(saved_log["block_type"], entry["block_type"])
+        self.assertEqual(saved_log["protocol"], entry["protocol"])
+        self.assertEqual(saved_log["doses"], json.dumps(entry["doses"]))
 
